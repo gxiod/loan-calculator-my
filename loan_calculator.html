@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium MYR Loan Optimizer</title>
+    <style>
+        :root { 
+            --primary: #1a73e8; 
+            --secondary: #188038; 
+            --warning: #d93025; 
+            --bg: #f4f7f9; 
+            --card-bg: #ffffff;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            padding: 20px; 
+            color: #202124; 
+        }
+
+        .container { 
+            display: grid; 
+            grid-template-columns: 420px 1fr; 
+            gap: 25px; 
+            max-width: 1500px; 
+            margin: 0 auto; 
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .panel { 
+            background: var(--card-bg); 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04); 
+            transition: all 0.3s ease;
+        }
+        
+        .panel:hover { box-shadow: 0 15px 35px rgba(0,0,0,0.08); }
+
+        h2 { margin-top: 0; color: var(--primary); font-weight: 800; font-size: 1.6rem; }
+
+        .input-group { margin-bottom: 18px; }
+        label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; color: #5f6368; text-transform: uppercase; }
+        
+        input { 
+            width: 100%; padding: 12px 15px; border: 2px solid #edf0f2; border-radius: 12px; 
+            font-size: 1rem; transition: all 0.3s ease; outline: none; background: #fafafa;
+        }
+        
+        input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(26,115,232,0.1); }
+
+        /* --- SLIDING TOGGLE CSS --- */
+        .sliding-switch {
+            position: relative;
+            display: flex;
+            background: #eee;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 25px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sliding-switch input { display: none; }
+
+        .sliding-switch .slider {
+            position: absolute;
+            height: calc(100% - 8px);
+            width: calc(50% - 4px);
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+        }
+
+        .sliding-switch label {
+            flex: 1;
+            padding: 10px 0;
+            text-align: center;
+            z-index: 2;
+            margin: 0;
+            cursor: pointer;
+            font-weight: 700;
+            color: #70757a;
+            transition: color 0.3s;
+            text-transform: none; /* Keep label text natural */
+        }
+
+        /* Move slider based on checked input */
+        #fixed:checked ~ .slider { transform: translateX(0); }
+        #variable:checked ~ .slider { transform: translateX(100%); }
+
+        /* Change text color for active state */
+        #fixed:checked ~ label[for="fixed"],
+        #variable:checked ~ label[for="variable"] { color: var(--primary); }
+
+        /* --- STATS & TABLE --- */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 25px; }
+        .stat-card { background: #f8f9fa; padding: 15px; border-radius: 12px; border-top: 3px solid #dadce0; }
+        .stat-card.success { border-top-color: var(--secondary); background: #f0fff4; }
+        .stat-card.danger { border-top-color: var(--warning); background: #fff5f5; }
+        
+        .stat-val { display: block; font-size: 1.15rem; font-weight: 800; margin-top: 4px; }
+        .stat-label { font-size: 0.65rem; color: #70757a; font-weight: 700; }
+
+        .table-container { max-height: 600px; overflow-y: auto; border-radius: 12px; border: 1px solid #e8eaed; margin-top: 10px;}
+        table { width: 100%; border-collapse: collapse; background: white; font-size: 0.9rem; }
+        th { position: sticky; top: 0; background: #f8f9fa; padding: 15px; text-align: left; font-size: 0.75rem; z-index: 10; border-bottom: 2px solid #e8eaed; }
+        td { padding: 12px 15px; border-bottom: 1px solid #f1f3f4; }
+        
+        .total-row { background: #202124; color: white; font-weight: 700; position: sticky; bottom: 0; }
+        .total-row td { border: none; }
+
+        @media (max-width: 950px) { .container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="panel">
+        <h2>Loan Optimizer</h2>
+        
+        <!-- Sliding Toggle -->
+        <div class="sliding-switch">
+            <input type="radio" name="loanType" id="fixed" value="fixed" checked onchange="update()">
+            <input type="radio" name="loanType" id="variable" value="variable" onchange="update()">
+            
+            <label for="fixed">Fixed Rate</label>
+            <label for="variable">Reducing Balance</label>
+            <div class="slider"></div>
+        </div>
+
+        <div class="input-group">
+            <label>Loan Amount (RM)</label>
+            <input type="number" id="loanAmount" value="15000" oninput="update()">
+        </div>
+
+        <div class="input-group">
+            <label>Annual Interest Rate (%)</label>
+            <input type="number" id="interestRate" value="5.0" step="0.01" oninput="update()">
+        </div>
+
+        <div class="input-group">
+            <label>Loan Tenure (Months)</label>
+            <input type="number" id="tenure" value="12" oninput="update()">
+        </div>
+
+        <div class="input-group">
+            <label>Months Already Paid</label>
+            <input type="number" id="paidMonths" value="0" oninput="update()">
+        </div>
+
+        <div class="input-group">
+            <label>Extra Monthly Payment (RM)</label>
+            <input type="number" id="extraPay" value="0" oninput="update()">
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Monthly Installment</span>
+                <span class="stat-val" id="baseInstallment">RM 0.00</span>
+            </div>
+            <div class="stat-card danger">
+                <span class="stat-label">Total Interest Paid</span>
+                <span class="stat-val" id="totalInterestOccured">RM 0.00</span>
+            </div>
+            <div class="stat-card success">
+                <span class="stat-label">Interest Saved</span>
+                <span class="stat-val" id="interestSaved">RM 0.00</span>
+            </div>
+            <div class="stat-card success">
+                <span class="stat-label">Time Saved</span>
+                <span class="stat-val" id="timeSaved">0 Months</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h3 style="margin-top:0">Amortization Schedule</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Principal</th>
+                        <th>Interest</th>
+                        <th>Extra</th>
+                        <th>Total Paid</th>
+                        <th>Balance</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleBody"></tbody>
+                <tfoot id="tableFoot"></tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+const fmt = new Intl.NumberFormat('en-MY', { style: 'currency', currency: 'MYR' });
+
+function update() {
+    const P = parseFloat(document.getElementById('loanAmount').value) || 0;
+    const annualRate = parseFloat(document.getElementById('interestRate').value) || 0;
+    const N = parseInt(document.getElementById('tenure').value) || 0;
+    const paidMonths = parseInt(document.getElementById('paidMonths').value) || 0;
+    const extra = parseFloat(document.getElementById('extraPay').value) || 0;
+    const type = document.querySelector('input[name="loanType"]:checked').value;
+
+    const r = (annualRate / 100) / 12;
+    let tableHTML = "";
+    
+    // Baseline Calculation for Savings reference
+    let baselineTotalInterest = (type === 'fixed') 
+        ? (P * (annualRate/100) * (N/12)) 
+        : (r > 0 ? ( ( (P * r * Math.pow(1+r, N)) / (Math.pow(1+r, N) - 1) ) * N ) - P : 0);
+
+    let balance = P;
+    let tInterest = 0, tPrincipal = 0, tExtra = 0, tPaid = 0;
+    let monthlyInstallment = 0;
+    let month = 0;
+
+    if (P > 0 && N > 0) {
+        if (type === 'fixed') {
+            const monthlyInterest = (P * (annualRate/100) * (N/12)) / N;
+            const monthlyPrincipal = P / N;
+            monthlyInstallment = monthlyPrincipal + monthlyInterest;
+
+            while (balance > 0.01 && month < N) {
+                month++;
+                let extraApplied = month > paidMonths ? extra : 0;
+                let principalToPay = Math.min(balance, monthlyPrincipal + extraApplied);
+                
+                tInterest += monthlyInterest;
+                tPrincipal += (principalToPay - extraApplied);
+                tExtra += extraApplied;
+                tPaid += (principalToPay + monthlyInterest);
+
+                renderRow(month, principalToPay - extraApplied, monthlyInterest, extraApplied, principalToPay + monthlyInterest, balance - principalToPay);
+                balance -= principalToPay;
+            }
+        } else {
+            if (r > 0) {
+                monthlyInstallment = P * r * Math.pow(1+r, N) / (Math.pow(1+r, N) - 1);
+                while (balance > 0.01 && month < 600) {
+                    month++;
+                    let interestThisMonth = balance * r;
+                    let extraApplied = month > paidMonths ? extra : 0;
+                    let principalThisMonth = Math.min(balance, (monthlyInstallment - interestThisMonth) + extraApplied);
+                    
+                    tInterest += interestThisMonth;
+                    tPrincipal += (principalThisMonth - extraApplied);
+                    tExtra += extraApplied;
+                    tPaid += (principalThisMonth + interestThisMonth);
+
+                    renderRow(month, principalThisMonth - extraApplied, interestThisMonth, extraApplied, principalThisMonth + interestThisMonth, balance - principalThisMonth);
+                    balance -= principalThisMonth;
+                }
+            }
+        }
+    }
+
+    function renderRow(m, p, i, e, tp, bal) {
+        if (m > 500) return; // Prevent browser crash
+        tableHTML += `<tr>
+            <td>${m}</td>
+            <td>${fmt.format(p)}</td>
+            <td>${fmt.format(i)}</td>
+            <td style="color:var(--secondary); font-weight:700">${e > 0 ? '+' + fmt.format(e) : '-'}</td>
+            <td>${fmt.format(tp)}</td>
+            <td>${fmt.format(Math.max(0, bal))}</td>
+        </tr>`;
+    }
+
+    document.getElementById('scheduleBody').innerHTML = tableHTML;
+    document.getElementById('tableFoot').innerHTML = `<tr class="total-row"><td>TOTAL</td><td>${fmt.format(tPrincipal)}</td><td>${fmt.format(tInterest)}</td><td>${fmt.format(tExtra)}</td><td>${fmt.format(tPaid)}</td><td>-</td></tr>`;
+    
+    document.getElementById('baseInstallment').innerText = fmt.format(monthlyInstallment);
+    document.getElementById('totalInterestOccured').innerText = fmt.format(tInterest);
+    document.getElementById('interestSaved').innerText = fmt.format(Math.max(0, baselineTotalInterest - tInterest));
+    document.getElementById('timeSaved').innerText = Math.max(0, N - month) + " Months";
+}
+
+update();
+</script>
+
+</body>
+</html>
