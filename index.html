@@ -284,7 +284,12 @@ function update() {
     document.getElementById('baseInstallment').innerText = fmt.format(monthlyInstallment);
     document.getElementById('totalInterestOccured').innerText = fmt.format(tInterest);
     document.getElementById('interestSaved').innerText = fmt.format(Math.max(0, baselineTotalInterest - tInterest));
-    document.getElementById('timeSaved').innerText = Math.max(0, N - month) + " Months";
+    let timeSaved = Math.max(0, N - month);
+    let HTMLtimesaved = timeSaved + " Months";
+    if (timeSaved > 12)
+        HTMLtimesaved += `/ ${(timeSaved/12).toFixed(2)} Years`;
+    // document.getElementById('timeSaved').innerText = Math.max(0, N - month) + " Months";
+    document.getElementById('timeSaved').innerText = HTMLtimesaved;
 }
 
 update();
