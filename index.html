@@ -54,68 +54,42 @@
         
         input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(26,115,232,0.1); }
 
-        /* --- SLIDING TOGGLE CSS --- */
+        /* Sliding Toggle */
         .sliding-switch {
-            position: relative;
-            display: flex;
-            background: #eee;
-            border-radius: 12px;
-            padding: 4px;
-            margin-bottom: 25px;
-            cursor: pointer;
-            user-select: none;
+            position: relative; display: flex; background: #eee; border-radius: 12px;
+            padding: 4px; margin-bottom: 25px; cursor: pointer; user-select: none;
         }
-
         .sliding-switch input { display: none; }
-
         .sliding-switch .slider {
-            position: absolute;
-            height: calc(100% - 8px);
-            width: calc(50% - 4px);
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1;
+            position: absolute; height: calc(100% - 8px); width: calc(50% - 4px);
+            background: white; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1;
         }
-
         .sliding-switch label {
-            flex: 1;
-            padding: 10px 0;
-            text-align: center;
-            z-index: 2;
-            margin: 0;
-            cursor: pointer;
-            font-weight: 700;
-            color: #70757a;
-            transition: color 0.3s;
-            text-transform: none; /* Keep label text natural */
+            flex: 1; padding: 10px 0; text-align: center; z-index: 2; margin: 0;
+            cursor: pointer; font-weight: 700; color: #70757a; transition: color 0.3s;
         }
-
-        /* Move slider based on checked input */
         #fixed:checked ~ .slider { transform: translateX(0); }
         #variable:checked ~ .slider { transform: translateX(100%); }
+        #fixed:checked ~ label[for="fixed"], #variable:checked ~ label[for="variable"] { color: var(--primary); }
 
-        /* Change text color for active state */
-        #fixed:checked ~ label[for="fixed"],
-        #variable:checked ~ label[for="variable"] { color: var(--primary); }
-
-        /* --- STATS & TABLE --- */
+        /* Stats & Table */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 25px; }
         .stat-card { background: #f8f9fa; padding: 15px; border-radius: 12px; border-top: 3px solid #dadce0; }
         .stat-card.success { border-top-color: var(--secondary); background: #f0fff4; }
         .stat-card.danger { border-top-color: var(--warning); background: #fff5f5; }
-        
-        .stat-val { display: block; font-size: 1.15rem; font-weight: 800; margin-top: 4px; }
+        .stat-val { display: block; font-size: 1.1rem; font-weight: 800; margin-top: 4px; }
         .stat-label { font-size: 0.65rem; color: #70757a; font-weight: 700; }
 
         .table-container { max-height: 600px; overflow-y: auto; border-radius: 12px; border: 1px solid #e8eaed; margin-top: 10px;}
         table { width: 100%; border-collapse: collapse; background: white; font-size: 0.9rem; }
         th { position: sticky; top: 0; background: #f8f9fa; padding: 15px; text-align: left; font-size: 0.75rem; z-index: 10; border-bottom: 2px solid #e8eaed; }
         td { padding: 12px 15px; border-bottom: 1px solid #f1f3f4; }
-        
         .total-row { background: #202124; color: white; font-weight: 700; position: sticky; bottom: 0; }
-        .total-row td { border: none; }
+
+        /* History Actions */
+        .history-btn { width: 100%; text-align: left; padding: 10px; font-size: 0.8rem; border: 1px solid #eee; background: white; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .history-btn:hover { border-color: var(--primary); background: #f1f7ff; }
 
         @media (max-width: 950px) { .container { grid-template-columns: 1fr; } }
     </style>
@@ -126,13 +100,11 @@
     <div class="panel">
         <h2>Loan Optimizer</h2>
         
-        <!-- Sliding Toggle -->
         <div class="sliding-switch">
             <input type="radio" name="loanType" id="fixed" value="fixed" checked onchange="update()">
             <input type="radio" name="loanType" id="variable" value="variable" onchange="update()">
-            
             <label for="fixed">Fixed Rate</label>
-            <label for="variable">Reducing Balance</label>
+            <label for="variable">Reducing</label>
             <div class="slider"></div>
         </div>
 
@@ -143,31 +115,37 @@
 
         <div class="input-group">
             <label>Annual Interest Rate (%)</label>
-            <input type="number" id="interestRate" value="5.0" step="0.01" oninput="update()">
+            <input type="number" id="interestRate" value="5" step="0.01" oninput="update()">
         </div>
 
         <div class="input-group">
-            <label>Loan Tenure (Months)</label>
+            <label>Tenure (Months)</label>
             <input type="number" id="tenure" value="12" oninput="update()">
+        </div>
+
+        <!-- NEW: Amount Already Paid Field -->
+        <div class="input-group">
+            <label>Total Amount Already Paid (RM)</label>
+            <input type="number" id="amountAlreadyPaid" value="0" placeholder="e.g. 5000" oninput="syncPaid('amount')">
         </div>
 
         <div class="input-group">
             <label>Months Already Paid</label>
-            <input type="number" id="paidMonths" value="0" oninput="update()">
+            <input type="number" id="paidMonths" value="0" placeholder="e.g. 12" oninput="syncPaid('months')">
         </div>
 
         <div class="input-group">
             <label>Extra Monthly Payment (RM)</label>
-            <input type="number" id="extraPay" value="0" oninput="update()">
+            <input type="number" id="extraPay" value="0" style="border-color: var(--secondary)" oninput="update()">
         </div>
 
         <div class="stats-grid">
             <div class="stat-card">
-                <span class="stat-label">Monthly Installment</span>
+                <span class="stat-label">Instalment</span>
                 <span class="stat-val" id="baseInstallment">RM 0.00</span>
             </div>
             <div class="stat-card danger">
-                <span class="stat-label">Total Interest Paid</span>
+                <span class="stat-label">Total Interest</span>
                 <span class="stat-val" id="totalInterestOccured">RM 0.00</span>
             </div>
             <div class="stat-card success">
@@ -178,6 +156,18 @@
                 <span class="stat-label">Time Saved</span>
                 <span class="stat-val" id="timeSaved">0 Months</span>
             </div>
+        </div>
+
+        <!-- Save/History Section -->
+        <div style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;">
+            <label>Project Name</label>
+            <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                <input type="text" id="projectName" placeholder="e.g. Car Loan" style="flex: 1;">
+                <button onclick="saveProject()" style="padding: 10px 15px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold;">Save</button>
+            </div>
+            <label>Recent Calculations</label>
+            <div id="historyItems" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            <button onclick="clearHistory()" style="margin-top: 10px; background: none; border: none; color: var(--warning); font-size: 0.7rem; cursor: pointer; text-decoration: underline;">Clear All History</button>
         </div>
     </div>
 
@@ -203,96 +193,159 @@
 </div>
 
 <script>
-const fmt = new Intl.NumberFormat('en-MY', { style: 'currency', currency: 'MYR' });
+    const fmt = new Intl.NumberFormat('en-MY', { style: 'currency', currency: 'MYR' });
 
-function update() {
-    const P = parseFloat(document.getElementById('loanAmount').value) || 0;
-    const annualRate = parseFloat(document.getElementById('interestRate').value) || 0;
-    const N = parseInt(document.getElementById('tenure').value) || 0;
-    const paidMonths = parseInt(document.getElementById('paidMonths').value) || 0;
-    const extra = parseFloat(document.getElementById('extraPay').value) || 0;
-    const type = document.querySelector('input[name="loanType"]:checked').value;
+    // Helper to sync the two fields
+    function syncPaid(source) {
+        const P = parseFloat(document.getElementById('loanAmount').value) || 0;
+        const annualRate = parseFloat(document.getElementById('interestRate').value) || 0;
+        const N = parseInt(document.getElementById('tenure').value) || 0;
+        const type = document.querySelector('input[name="loanType"]:checked').value;
+        const r = (annualRate / 100) / 12;
 
-    const r = (annualRate / 100) / 12;
-    let tableHTML = "";
-    
-    // Baseline Calculation for Savings reference
-    let baselineTotalInterest = (type === 'fixed') 
-        ? (P * (annualRate/100) * (N/12)) 
-        : (r > 0 ? ( ( (P * r * Math.pow(1+r, N)) / (Math.pow(1+r, N) - 1) ) * N ) - P : 0);
-
-    let balance = P;
-    let tInterest = 0, tPrincipal = 0, tExtra = 0, tPaid = 0;
-    let monthlyInstallment = 0;
-    let month = 0;
-
-    if (P > 0 && N > 0) {
+        // Calculate the standard monthly installment first
+        let bInstallment = 0;
         if (type === 'fixed') {
-            const monthlyInterest = (P * (annualRate/100) * (N/12)) / N;
-            const monthlyPrincipal = P / N;
-            monthlyInstallment = monthlyPrincipal + monthlyInterest;
-
-            while (balance > 0.01 && month < N) {
-                month++;
-                let extraApplied = month > paidMonths ? extra : 0;
-                let principalToPay = Math.min(balance, monthlyPrincipal + extraApplied);
-                
-                tInterest += monthlyInterest;
-                tPrincipal += (principalToPay - extraApplied);
-                tExtra += extraApplied;
-                tPaid += (principalToPay + monthlyInterest);
-
-                renderRow(month, principalToPay - extraApplied, monthlyInterest, extraApplied, principalToPay + monthlyInterest, balance - principalToPay);
-                balance -= principalToPay;
-            }
+            bInstallment = (P + (P * (annualRate/100) * (N/12))) / N;
         } else {
-            if (r > 0) {
-                monthlyInstallment = P * r * Math.pow(1+r, N) / (Math.pow(1+r, N) - 1);
-                while (balance > 0.01 && month < 600) {
-                    month++;
-                    let interestThisMonth = balance * r;
-                    let extraApplied = month > paidMonths ? extra : 0;
-                    let principalThisMonth = Math.min(balance, (monthlyInstallment - interestThisMonth) + extraApplied);
-                    
-                    tInterest += interestThisMonth;
-                    tPrincipal += (principalThisMonth - extraApplied);
-                    tExtra += extraApplied;
-                    tPaid += (principalThisMonth + interestThisMonth);
+            bInstallment = r > 0 ? (P * r * Math.pow(1+r, N)) / (Math.pow(1+r, N) - 1) : P/N;
+        }
 
-                    renderRow(month, principalThisMonth - extraApplied, interestThisMonth, extraApplied, principalThisMonth + interestThisMonth, balance - principalThisMonth);
-                    balance -= principalThisMonth;
+        if (source === 'amount') {
+            const amt = parseFloat(document.getElementById('amountAlreadyPaid').value) || 0;
+            // If user types amount, update months
+            document.getElementById('paidMonths').value = bInstallment > 0 ? Math.floor(amt / bInstallment) : 0;
+        } else {
+            const months = parseInt(document.getElementById('paidMonths').value) || 0;
+            // If user types months, update amount
+            document.getElementById('amountAlreadyPaid').value = (months * bInstallment).toFixed(2);
+        }
+        
+        // Trigger the main calculation
+        update();
+    }
+
+    function update() {
+        const P = parseFloat(document.getElementById('loanAmount').value) || 0;
+        const annualRate = parseFloat(document.getElementById('interestRate').value) || 0;
+        const N = parseInt(document.getElementById('tenure').value) || 0;
+        const extra = parseFloat(document.getElementById('extraPay').value) || 0;
+        const derivedMonths = parseInt(document.getElementById('paidMonths').value) || 0;
+        const type = document.querySelector('input[name="loanType"]:checked').value;
+
+        const r = (annualRate / 100) / 12;
+        
+        // Get Installment for display
+        let bInstallment = 0;
+        if (type === 'fixed') {
+            bInstallment = (P + (P * (annualRate/100) * (N/12))) / N;
+        } else {
+            bInstallment = r > 0 ? (P * r * Math.pow(1+r, N)) / (Math.pow(1+r, N) - 1) : P/N;
+        }
+
+        // Baseline for Savings comparison
+        let baselineTotalInterest = (type === 'fixed') 
+            ? (P * (annualRate/100) * (N/12)) 
+            : (r > 0 ? (bInstallment * N) - P : 0);
+
+        let tableHTML = "";
+        let balance = P;
+        let tInt = 0, tPri = 0, tExt = 0, tPaid = 0;
+        let month = 0;
+
+        if (P > 0 && N > 0) {
+            while (balance > 0.01 && month < 600) {
+                month++;
+                let interestThisMonth = 0;
+                let principalThisMonth = 0;
+                let extraApplied = month > derivedMonths ? extra : 0;
+
+                if (type === 'fixed') {
+                    interestThisMonth = (P * (annualRate/100) * (N/12)) / N;
+                    principalThisMonth = Math.min(balance, (P / N) + extraApplied);
+                } else {
+                    interestThisMonth = balance * r;
+                    principalThisMonth = Math.min(balance, (bInstallment - interestThisMonth) + extraApplied);
                 }
+
+                let totalThisMonth = principalThisMonth + interestThisMonth;
+                
+                tInt += interestThisMonth;
+                tPri += (principalThisMonth - extraApplied);
+                tExt += extraApplied;
+                tPaid += totalThisMonth;
+
+                renderRow(month, principalThisMonth - extraApplied, interestThisMonth, extraApplied, totalThisMonth, balance - principalThisMonth);
+                balance -= principalThisMonth;
+                
+                // Safety break for Fixed rate if it reaches tenure and balance is basically 0
+                if(month >= N && type === 'fixed' && balance <= 0.05) break; 
             }
         }
+
+        function renderRow(m, p, i, e, tp, bal) {
+            tableHTML += `<tr>
+                <td>${m}</td>
+                <td>${fmt.format(p)}</td>
+                <td>${fmt.format(i)}</td>
+                <td style="color:var(--secondary); font-weight:700">${e > 0 ? '+' + fmt.format(e) : '-'}</td>
+                <td>${fmt.format(tp)}</td>
+                <td>${fmt.format(Math.max(0, bal))}</td>
+            </tr>`;
+        }
+
+        document.getElementById('scheduleBody').innerHTML = tableHTML;
+        document.getElementById('tableFoot').innerHTML = `<tr class="total-row"><td>TOTAL</td><td>${fmt.format(tPri)}</td><td>${fmt.format(tInt)}</td><td>${fmt.format(tExt)}</td><td>${fmt.format(tPaid)}</td><td>-</td></tr>`;
+        document.getElementById('baseInstallment').innerText = fmt.format(bInstallment);
+        document.getElementById('totalInterestOccured').innerText = fmt.format(tInt);
+        document.getElementById('interestSaved').innerText = fmt.format(Math.max(0, baselineTotalInterest - tInt));
+        
+        let timeSaved = Math.max(0, N - month);
+        let timeText = timeSaved + " Months";
+        if(timeSaved >= 12) timeText += ` (${(timeSaved/12).toFixed(1)}Y)`;
+        document.getElementById('timeSaved').innerText = timeText;
     }
 
-    function renderRow(m, p, i, e, tp, bal) {
-        if (m > 500) return; // Prevent browser crash
-        tableHTML += `<tr>
-            <td>${m}</td>
-            <td>${fmt.format(p)}</td>
-            <td>${fmt.format(i)}</td>
-            <td style="color:var(--secondary); font-weight:700">${e > 0 ? '+' + fmt.format(e) : '-'}</td>
-            <td>${fmt.format(tp)}</td>
-            <td>${fmt.format(Math.max(0, bal))}</td>
-        </tr>`;
+    // History Functions
+    function saveProject() {
+        const name = document.getElementById('projectName').value || "Unnamed Project";
+        const data = {
+            name,
+            loanAmount: document.getElementById('loanAmount').value,
+            interestRate: document.getElementById('interestRate').value,
+            tenure: document.getElementById('tenure').value,
+            amountAlreadyPaid: document.getElementById('amountAlreadyPaid').value,
+            extraPay: document.getElementById('extraPay').value,
+            type: document.querySelector('input[name="loanType"]:checked').value
+        };
+        let history = JSON.parse(localStorage.getItem('loanHistory') || '[]');
+        history.unshift(data);
+        localStorage.setItem('loanHistory', JSON.stringify(history.slice(0, 5)));
+        loadHistoryUI();
     }
 
-    document.getElementById('scheduleBody').innerHTML = tableHTML;
-    document.getElementById('tableFoot').innerHTML = `<tr class="total-row"><td>TOTAL</td><td>${fmt.format(tPrincipal)}</td><td>${fmt.format(tInterest)}</td><td>${fmt.format(tExtra)}</td><td>${fmt.format(tPaid)}</td><td>-</td></tr>`;
-    
-    document.getElementById('baseInstallment').innerText = fmt.format(monthlyInstallment);
-    document.getElementById('totalInterestOccured').innerText = fmt.format(tInterest);
-    document.getElementById('interestSaved').innerText = fmt.format(Math.max(0, baselineTotalInterest - tInterest));
-    let timeSaved = Math.max(0, N - month);
-    let HTMLtimesaved = timeSaved + " Months";
-    if (timeSaved > 12)
-        HTMLtimesaved += `/ ${(timeSaved/12).toFixed(2)} Years`;
-    // document.getElementById('timeSaved').innerText = Math.max(0, N - month) + " Months";
-    document.getElementById('timeSaved').innerText = HTMLtimesaved;
-}
+    function loadHistoryUI() {
+        const history = JSON.parse(localStorage.getItem('loanHistory') || '[]');
+        const container = document.getElementById('historyItems');
+        container.innerHTML = history.map((item, i) => 
+            `<button class="history-btn" onclick="loadProject(${i})"><strong>${item.name}</strong> - RM ${item.loanAmount}</button>`
+        ).join('');
+    }
 
-update();
+    function loadProject(i) {
+        const item = JSON.parse(localStorage.getItem('loanHistory'))[i];
+        document.getElementById('loanAmount').value = item.loanAmount;
+        document.getElementById('interestRate').value = item.interestRate;
+        document.getElementById('tenure').value = item.tenure;
+        document.getElementById('amountAlreadyPaid').value = item.amountAlreadyPaid;
+        document.getElementById('extraPay').value = item.extraPay;
+        document.getElementById(item.type).checked = true;
+        update();
+    }
+
+    function clearHistory() { localStorage.removeItem('loanHistory'); loadHistoryUI(); }
+
+    window.onload = () => { loadHistoryUI(); update(); };
 </script>
 
 </body>
